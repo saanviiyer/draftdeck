@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "AI content-drafting assistant with a human-in-the-loop publish gate. Drafts are AI-generated; publishing requires explicit per-post approval and is disabled by default.",
+  "description": "AI drafts your social posts; nothing publishes until you approve each one.",
   "scripts": {
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "node server/index.js",

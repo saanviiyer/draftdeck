@@ -1,5 +1,8 @@
 # DraftDeck
 
+> AI drafts your social posts; nothing publishes until you approve each one.
+
+
 An AI content-drafting assistant that automates the painful part of the social
 workflow — **drafting** — while keeping a human firmly in control of publishing.
 
