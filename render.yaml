@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: draftdeck
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      # Leave unset to run drafting in MOCK MODE (demoable with no key). Set a
+      # real key in the Render dashboard to use the live Anthropic API.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Publishing stays DISABLED (dry-run only) unless this is exactly "true".
+      # Per-post human confirmation is required regardless of this value.
+      - key: PUBLISH_ENABLED
+        value: false
+      # Render injects PORT automatically; the server honors process.env.PORT.

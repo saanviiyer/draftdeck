@@ -1,0 +1,35 @@
+{
+  "name": "draftdeck",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI content-drafting assistant with a human-in-the-loop publish gate. Drafts are AI-generated; publishing requires explicit per-post approval and is disabled by default.",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "node server/index.js",
+    "dev:client": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "start": "NODE_ENV=production node server/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
