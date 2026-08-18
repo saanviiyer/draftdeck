@@ -8,6 +8,8 @@ export const PLATFORM_LABELS = {
   blog: 'short blog post',
 }
 
+export const PLATFORM_LIMITS = { twitter: 280, linkedin: 3000, instagram: 2200, blog: 20000 }
+
 // The content policy is embedded directly in the system prompt so the model
 // refuses disallowed content at generation time.
 export const CONTENT_POLICY = `CONTENT POLICY (must be followed):

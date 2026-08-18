@@ -10,9 +10,9 @@
  */
 export const dryRunAdapter = {
   id: 'dry-run',
-  async publish({ platform, text }) {
-    const preview = text.length > 80 ? text.slice(0, 80) + '…' : text
-    console.log(`[DRY-RUN] Would publish to ${platform}: "${preview}"`)
+  ready: true,
+  async publish({ platform, idempotencyKey }) {
+    console.log(`[DRY-RUN] Simulated one ${platform} publish (${idempotencyKey}). Content omitted from logs.`)
     return {
       mode: 'dry-run',
       platform,
@@ -31,6 +31,8 @@ export const dryRunAdapter = {
 function makeStub(id, requiredEnv) {
   return {
     id,
+    get ready() { return false },
+    requiredEnv,
     async publish() {
       const missing = requiredEnv.filter((k) => !process.env[k])
       if (missing.length) {
@@ -70,5 +72,14 @@ export const realAdapters = {
  */
 export function selectAdapter(platform, publishEnabled) {
   if (!publishEnabled) return dryRunAdapter
-  return realAdapters[platform] || dryRunAdapter
+  const adapter = realAdapters[platform]
+  if (!adapter) throw new Error(`No adapter exists for "${platform}".`)
+  return adapter
+}
+
+export function adapterCapabilities(publishEnabled) {
+  return Object.fromEntries(Object.entries(realAdapters).map(([platform, adapter]) => [platform, {
+    mode: publishEnabled ? 'real' : 'dry-run',
+    ready: publishEnabled ? adapter.ready : true,
+  }]))
 }

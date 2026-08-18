@@ -6,6 +6,11 @@ const LABELS: Record<string, string> = {
   rejected: 'Rejected',
   published: 'Published',
   publish_failed: 'Publish failed',
+  publish_started: 'Publish started',
+  simulated: 'Simulated only',
+  restored: 'Revision restored',
+  reopened: 'Reopened',
+  publish_reconciled: 'Publish reconciled',
 }
 
 const TONES: Record<string, string> = {
@@ -14,13 +19,15 @@ const TONES: Record<string, string> = {
   rejected: 'text-slate-400',
   published: 'text-green-700',
   publish_failed: 'text-red-600',
+  simulated: 'text-blue-700',
+  publish_started: 'text-amber-700',
 }
 
 export function History({ history }: { history: HistoryEntry[] }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-base font-semibold text-slate-900">History</h2>
-      <p className="mt-1 text-xs text-slate-500">Everything drafted, edited, approved, and published this session.</p>
+      <p className="mt-1 text-xs text-slate-500">Durable audit history for drafting, edits, approvals, simulations, failures, and publishing.</p>
       <ul className="mt-3 space-y-2 max-h-80 overflow-auto">
         {history.length === 0 && <li className="text-sm text-slate-400">Nothing yet.</li>}
         {history.map((h) => (

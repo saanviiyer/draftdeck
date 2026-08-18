@@ -13,3 +13,5 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   instagram: 'Instagram',
   blog: 'Blog',
 }
+
+export const PLATFORM_LIMIT: Record<Platform, number> = { twitter: 280, linkedin: 3000, instagram: 2200, blog: 20000 }

@@ -34,6 +34,7 @@ export function Compose({ busy, onGenerate }: Props) {
                 type="button"
                 key={p.value}
                 onClick={() => setPlatform(p.value)}
+                aria-pressed={platform === p.value}
                 className={`rounded-lg border px-3 py-2 text-sm text-left transition ${
                   platform === p.value
                     ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
@@ -56,6 +57,7 @@ export function Compose({ busy, onGenerate }: Props) {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             rows={3}
+            maxLength={4000}
             placeholder="e.g. Announce our new open-source library and invite early feedback"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
@@ -70,6 +72,7 @@ export function Compose({ busy, onGenerate }: Props) {
             value={tone}
             onChange={(e) => setTone(e.target.value)}
             placeholder="e.g. friendly, professional, playful"
+            maxLength={120}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>

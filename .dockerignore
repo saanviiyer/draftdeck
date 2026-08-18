@@ -5,3 +5,5 @@ dist
 .git
 *.log
 .DS_Store
+server/data
+.tmp

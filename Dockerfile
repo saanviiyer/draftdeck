@@ -4,7 +4,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -14,7 +14,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./
 # Runtime dependencies only (no vite/tsc/etc.).
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 COPY server ./server
 COPY --from=build /app/dist ./dist
 
@@ -23,4 +23,5 @@ COPY --from=build /app/dist ./dist
 # (dry-run only). Publishing still requires per-post confirmation regardless.
 ENV PORT=8787
 EXPOSE 8787
+VOLUME ["/app/server/data"]
 CMD ["node", "server/index.js"]

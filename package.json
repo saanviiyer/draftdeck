@@ -2,6 +2,7 @@
   "name": "draftdeck",
   "version": "1.0.0",
   "private": true,
+  "engines": { "node": ">=20" },
   "type": "module",
   "description": "AI drafts your social posts; nothing publishes until you approve each one.",
   "scripts": {
@@ -10,11 +11,11 @@
     "dev:client": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "NODE_ENV=production node server/index.js"
+    "start": "NODE_ENV=production node server/index.js",
+    "test": "TMPDIR=$PWD/.tmp vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "react": "^18.3.1",
@@ -30,6 +31,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vitest": "^3.2.7"
   }
 }

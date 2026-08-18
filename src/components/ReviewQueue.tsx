@@ -4,14 +4,16 @@ import { DraftCard } from './DraftCard'
 interface Props {
   drafts: Draft[]
   status: Status | null
-  onEdit: (id: string, text: string) => Promise<void>
+  onEdit: (id: string, text: string, revision: number) => Promise<void>
   onReject: (id: string) => Promise<void>
-  onPublish: (id: string) => Promise<void>
+  onPublish: (draft: Draft) => Promise<void>
+  onRestore: (id: string, revision: number, expectedRevision: number) => Promise<void>
+  onReopen: (id: string) => Promise<void>
 }
 
-export function ReviewQueue({ drafts, status, onEdit, onReject, onPublish }: Props) {
+export function ReviewQueue({ drafts, status, onEdit, onReject, onPublish, onRestore, onReopen }: Props) {
   const pending = drafts.filter((d) => d.status === 'draft')
-  const published = drafts.filter((d) => d.status === 'published')
+  const completed = drafts.filter((d) => d.status !== 'draft')
 
   return (
     <section className="space-y-6">
@@ -31,17 +33,17 @@ export function ReviewQueue({ drafts, status, onEdit, onReject, onPublish }: Pro
             </div>
           )}
           {pending.map((d) => (
-            <DraftCard key={d.id} draft={d} status={status} onEdit={onEdit} onReject={onReject} onPublish={onPublish} />
+            <DraftCard key={d.id} draft={d} status={status} onEdit={onEdit} onReject={onReject} onPublish={onPublish} onRestore={onRestore} onReopen={onReopen} />
           ))}
         </div>
       </div>
 
-      {published.length > 0 && (
+      {completed.length > 0 && (
         <div>
-          <h2 className="text-base font-semibold text-slate-900">Published</h2>
+          <h2 className="text-base font-semibold text-slate-900">Activity</h2>
           <div className="mt-3 space-y-3">
-            {published.map((d) => (
-              <DraftCard key={d.id} draft={d} status={status} onEdit={onEdit} onReject={onReject} onPublish={onPublish} />
+            {completed.map((d) => (
+              <DraftCard key={d.id} draft={d} status={status} onEdit={onEdit} onReject={onReject} onPublish={onPublish} onRestore={onRestore} onReopen={onReopen} />
             ))}
           </div>
         </div>

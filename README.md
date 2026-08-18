@@ -61,13 +61,15 @@ gated, explicit, and off by default. These are enforced in code, not just docs:
   returns realistic draft variants locally — the app is fully usable with zero
   setup.
 
-State (drafts + history) lives in the server's memory for the session.
+Drafts, retained revisions, publish attempts, and audit history live in an
+atomic server-side snapshot. The previous snapshot remains as `store.json.bak`;
+corrupt data stops startup instead of being silently overwritten.
 
 ---
 
 ## Run it
 
-Requires Node 18+.
+Requires Node 20+.
 
 ```bash
 npm install
@@ -84,6 +86,10 @@ will only simulate and log.
 To use the real Anthropic API for drafting, copy `.env.example` to `.env` and set
 `ANTHROPIC_API_KEY`. Drafting still works identically; only the source of the
 variants changes.
+
+Production also requires an `OWNER_KEY` of at least 12 characters. The browser
+keeps it only in tab-scoped `sessionStorage` and sends it as a Bearer token.
+Every draft, history, edit, reject, restore, and publish API is owner-protected.
 
 ### Build (type-checked)
 
@@ -108,7 +114,7 @@ files and also hosts `/api` on one port. `/api` takes precedence; every other pa
 ```bash
 npm install        # install deps
 npm run build      # typecheck + build the client to dist/
-npm start          # NODE_ENV=production, serves API + client on PORT (default 8787)
+OWNER_KEY='use-a-long-secret' npm start
 ```
 
 With no `ANTHROPIC_API_KEY`, drafting runs in **mock mode**. `PUBLISH_ENABLED` stays `false` unless you
@@ -117,21 +123,21 @@ explicitly set it to `true` (and even then, per-post approval is still required)
 ### Docker
 
 A multi-stage `Dockerfile` builds the client in stage 1 and runs a slim Node runtime in stage 2, serving
-API + static client on `$PORT` (default 8787, `EXPOSE`d). With no env keys it runs in mock mode; pass
+API + static client on `$PORT` (default 8787, `EXPOSE`d). With no AI key it runs in mock mode; pass
 `ANTHROPIC_API_KEY` to draft with Claude. `PUBLISH_ENABLED` is intentionally **not** set in the image, so
 publishing stays disabled (dry-run) by default.
 
 ```bash
 docker build -t draftdeck .
-docker run -p 8787:8787 draftdeck                        # mock drafting, publishing disabled
-docker run -p 8787:8787 -e ANTHROPIC_API_KEY=sk-ant-... draftdeck   # live drafting
+docker run -p 8787:8787 -e OWNER_KEY='use-a-long-secret' -v draftdeck-data:/app/server/data draftdeck
+docker run -p 8787:8787 -e OWNER_KEY='use-a-long-secret' -e ANTHROPIC_API_KEY=sk-ant-... -v draftdeck-data:/app/server/data draftdeck
 ```
 
 ### Render (Blueprint)
 
 `render.yaml` defines a Node web service — build `npm install && npm run build`, start `npm start`, with
 `ANTHROPIC_API_KEY` as a dashboard-set secret (`sync:false`) and `PUBLISH_ENABLED=false` pinned in the
-Blueprint. Render injects `PORT` automatically.
+Blueprint. It mounts a persistent disk at `/var/data`; Render injects `PORT` automatically.
 
 ---
 
@@ -148,6 +154,11 @@ own machine and under your own accounts:
    deliberate: wiring a live integration is an explicit act by the operator who
    owns the account.
 
+DraftDeck reports adapter readiness separately from the global feature flag.
+Every bundled real adapter currently reports `ready: false`; setting
+`PUBLISH_ENABLED=true` does not pretend a stub can publish. Dry-run is the only
+ready bundled adapter.
+
 When enabled, every post still requires an individual "Approve & Publish" click.
 There is no way to bypass the per-post gate.
 
@@ -156,6 +167,34 @@ everything sent from your accounts — accuracy, compliance with each platform's
 terms, and the consequences of posting. Verify every draft (especially ones
 flagged "needs review") before approving. DraftDeck is a drafting aid, not a
 source of truth.
+
+## Durable lifecycle and exact approval
+
+- Edits use optimistic concurrency (`expectedRevision`), retain up to 50 full
+  revisions, and can restore an older version as a new revision.
+- Rejection is reversible rather than destructive. Rejected, simulated, and
+  failed items can be reopened without losing their audit trail.
+- Approval names the exact reviewed revision and supplies a unique
+  `Idempotency-Key`. Changed text invalidates the approval. Claim-flagged drafts
+  additionally require an explicit verification acknowledgement.
+- The state machine is `draft -> publishing -> published | simulated |
+  publish_failed`. A dry-run is never labeled published and never receives a
+  `publishedAt` timestamp.
+- `publishing` is persisted before an adapter call. Concurrent attempts are
+  rejected, repeated keys return the original result, and interrupted sends
+  never retry automatically. The owner verifies the platform and reconciles the
+  single attempt explicitly.
+
+## Security and operating boundary
+
+The same-origin API applies CSP/clickjacking/MIME/referrer protections, strict
+body and prompt limits, AI timeouts/retries, constant-time owner checks,
+production-safe errors, and separate throttles for login, generation, and
+publishing. Draft content is omitted from dry-run logs.
+
+The file store is single-instance. Horizontal scaling or multi-owner operation
+requires Postgres transactions, organization-scoped authorization, a shared
+rate limiter, and encrypted platform credential storage.
 
 ---
 
@@ -187,10 +226,13 @@ draftdeck/
 |--------|-------|---------|
 | GET | `/api/status` | mock/live + publish-enabled flags |
 | POST | `/api/draft` | generate 1–3 variants for `{platform, topic, tone}` |
-| PATCH | `/api/draft/:id` | edit a draft in place (re-runs claims check) |
-| DELETE | `/api/draft/:id` | reject a draft |
+| PATCH | `/api/draft/:id` | revision-checked edit (re-runs claims check) |
+| POST | `/api/draft/:id/restore` | restore a retained revision as a new one |
+| DELETE | `/api/draft/:id` | soft-reject a draft |
+| POST | `/api/draft/:id/reopen` | reopen a rejected/simulated/failed item |
 | GET | `/api/drafts` | list drafts |
-| GET | `/api/history` | session history |
-| POST | `/api/publish/:id` | **the gate** — requires `{confirm:true}`, one post only |
+| GET | `/api/history` | durable audit history |
+| POST | `/api/publish/:id` | **the gate** — confirmation, exact revision, claim acknowledgement, and idempotency key |
+| POST | `/api/publish/:id/resolve` | reconcile one interrupted attempt after external verification |
 
 There is no batch publish route by design.

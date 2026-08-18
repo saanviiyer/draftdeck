@@ -1,6 +1,7 @@
 import type { Status } from '../types'
 
 export function Header({ status }: { status: Status | null }) {
+  const readyAdapters = status ? Object.values(status.adapterCapabilities).filter((adapter) => adapter.ready).length : 0
   return (
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between gap-4">
@@ -17,11 +18,11 @@ export function Header({ status }: { status: Status | null }) {
                 title={status.mockMode ? 'No ANTHROPIC_API_KEY set — drafts are generated locally.' : 'Using the Anthropic API for drafting.'}
               />
               <Badge
-                tone={status.publishEnabled ? 'red' : 'slate'}
-                label={status.publishEnabled ? 'Publishing ENABLED' : 'Dry-run (safe)'}
+                tone={status.publishEnabled ? (readyAdapters ? 'red' : 'amber') : 'slate'}
+                label={status.publishEnabled ? (readyAdapters ? 'Real publishing enabled' : 'Real adapters unavailable') : 'Dry-run (safe)'}
                 title={
                   status.publishEnabled
-                    ? 'PUBLISH_ENABLED=true — approved posts may be sent to real platforms.'
+                    ? readyAdapters ? 'PUBLISH_ENABLED=true — implemented adapters may send approved posts.' : 'PUBLISH_ENABLED=true, but every bundled real adapter is an honest non-publishing stub.'
                     : 'PUBLISH_ENABLED=false — publishing only simulates and logs. Nothing is sent externally.'
                 }
               />
