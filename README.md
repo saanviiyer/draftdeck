@@ -4,7 +4,7 @@
 
 
 An AI content-drafting assistant that automates the painful part of the social
-workflow — **drafting** — while keeping a human firmly in control of publishing.
+workflow (**drafting**) while keeping a human firmly in control of publishing.
 
 You pick a platform and describe what you want. The AI returns 1–3 draft
 variants. You review, edit in place, and must **explicitly approve each post**
@@ -15,7 +15,7 @@ and no fake-news generation.**
 
 ## Safety model
 
-DraftDeck is built so the risky part — sending content to the outside world — is
+DraftDeck is built so the risky part (sending content to the outside world) is
 gated, explicit, and off by default. These are enforced in code, not just docs:
 
 1. **Publishing is off by default (dry-run).** The server reads `PUBLISH_ENABLED`
@@ -32,7 +32,7 @@ gated, explicit, and off by default. These are enforced in code, not just docs:
 3. **Credentials stay server-side.** All AI calls and all publish adapters run
    on the small Node/Express backend. The browser never sees API keys or
    platform tokens. (This is why the publish adapters live in
-   `server/services/` rather than `src/services/` — they must never ship to the
+   `server/services/` rather than `src/services/`. They must never ship to the
    client.)
 
 4. **Content policy at generation time.** The drafting system prompt
@@ -54,11 +54,11 @@ gated, explicit, and off by default. These are enforced in code, not just docs:
 ## How it works
 
 - **Frontend:** Vite + React + TypeScript + Tailwind (`src/`).
-- **Backend:** Node + Express (`server/`) — handles AI drafting and the publish
+- **Backend:** Node + Express (`server/`), handles AI drafting and the publish
   gate so credentials never touch the browser.
 - **AI:** `@anthropic-ai/sdk`, model `claude-sonnet-5`, key from
   `ANTHROPIC_API_KEY`. **If the key is unset, the server runs in MOCK MODE** and
-  returns realistic draft variants locally — the app is fully usable with zero
+  returns realistic draft variants locally, the app is fully usable with zero
   setup.
 
 Drafts, retained revisions, publish attempts, and audit history live in an
@@ -80,7 +80,7 @@ npm run dev
 - Server: http://localhost:8787 (the client proxies `/api` to it)
 
 Out of the box this runs in **mock mode** (no API key needed) and **dry-run**
-(publishing disabled). You can draft, edit, reject, and "publish" — publishing
+(publishing disabled). You can draft, edit, reject, and "publish", publishing
 will only simulate and log.
 
 To use the real Anthropic API for drafting, copy `.env.example` to `.env` and set
@@ -105,7 +105,7 @@ Runs `tsc` (no TS errors) then `vite build` to produce `dist/`.
 
 This ships as a **single service**: the Express server serves the built client (`dist/`) as static
 files and also hosts `/api` on one port. `/api` takes precedence; every other path falls back to
-`index.html` so client routing works. **The publish gate is unchanged** — every publish still requires
+`index.html` so client routing works. **The publish gate is unchanged**. Every publish still requires
 `{confirm:true}` per post, there is no batch route, and `PUBLISH_ENABLED` still defaults to `false`
 (dry-run only).
 
@@ -135,7 +135,7 @@ docker run -p 8787:8787 -e OWNER_KEY='use-a-long-secret' -e ANTHROPIC_API_KEY=sk
 
 ### Render (Blueprint)
 
-`render.yaml` defines a Node web service — build `npm install && npm run build`, start `npm start`, with
+`render.yaml` defines a Node web service, build `npm install && npm run build`, start `npm start`, with
 `ANTHROPIC_API_KEY` as a dashboard-set secret (`sync:false`) and `PUBLISH_ENABLED=false` pinned in the
 Blueprint. It mounts a persistent disk at `/var/data`; Render injects `PORT` automatically.
 
@@ -150,7 +150,7 @@ own machine and under your own accounts:
 2. Provide your own platform credentials (see `.env.example`).
 3. **Implement the live API call** for the platform in
    `server/services/adapters.js`. The real adapters ship as **stubs** that
-   refuse to publish until you do this — even with credentials present. This is
+   refuse to publish until you do this, even with credentials present. This is
    deliberate: wiring a live integration is an explicit act by the operator who
    owns the account.
 
@@ -163,7 +163,7 @@ When enabled, every post still requires an individual "Approve & Publish" click.
 There is no way to bypass the per-post gate.
 
 **Responsibility:** if you enable real publishing, you are responsible for
-everything sent from your accounts — accuracy, compliance with each platform's
+everything sent from your accounts, accuracy, compliance with each platform's
 terms, and the consequences of posting. Verify every draft (especially ones
 flagged "needs review") before approving. DraftDeck is a drafting aid, not a
 source of truth.
@@ -232,7 +232,7 @@ draftdeck/
 | POST | `/api/draft/:id/reopen` | reopen a rejected/simulated/failed item |
 | GET | `/api/drafts` | list drafts |
 | GET | `/api/history` | durable audit history |
-| POST | `/api/publish/:id` | **the gate** — confirmation, exact revision, claim acknowledgement, and idempotency key |
+| POST | `/api/publish/:id` | **the gate**, confirmation, exact revision, claim acknowledgement, and idempotency key |
 | POST | `/api/publish/:id/resolve` | reconcile one interrupted attempt after external verification |
 
 There is no batch publish route by design.
